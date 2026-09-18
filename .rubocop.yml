@@ -1,0 +1,65 @@
+AllCops:
+  NewCops: enable
+
+Layout/EmptyLineAfterGuardClause:
+  Enabled: false
+Layout/EmptyLinesAroundAttributeAccessor:
+  Enabled: false
+Layout/EmptyLines:
+  Enabled: false
+Layout/FirstHashElementIndentation:
+  Enabled: false
+Layout/HeredocIndentation:
+  Enabled: false
+Layout/LineLength:
+  Enabled: false
+Layout/SpaceInsideReferenceBrackets:
+  Enabled: false
+Layout/SpaceInsideArrayLiteralBrackets:
+  Enabled: false
+
+Metrics/AbcSize:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
+Metrics/BlockNesting:
+  Enabled: false
+Metrics/ClassLength:
+  Enabled: false
+Metrics/CyclomaticComplexity:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/ModuleLength:
+  Enabled: false
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Naming/HeredocDelimiterNaming:
+  Enabled: false
+
+Style/AccessorGrouping:
+  Enabled: false
+Style/ConditionalAssignment:
+  Enabled: false
+Style/RedundantPercentQ:
+  Enabled: false
+Style/StderrPuts:
+  Enabled: false
+Style/TernaryParentheses:
+  Enabled: false
+Style/IfUnlessModifier:
+  Enabled: false
+Style/MixinUsage:
+  Enabled: false
+
+Lint/AmbiguousOperatorPrecedence:
+  Enabled: false
+Lint/RescueException:
+  Enabled: false
+
+Metrics/ParameterLists:
+  Enabled: false
+
+Style/YodaCondition:
+  Enabled: false
