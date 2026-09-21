@@ -1,0 +1,22 @@
+steps:
+- name: "$_REPO/cloud-sdk:latest"
+  entrypoint: "/usr/tool/prepare.sh"
+- name: "$_REPO/debian-ruby-3.3:latest"
+  entrypoint: "sh"
+  args: [ "-c", "$$PWD/test/cloudbuild.sh Debian $$PWD" ]
+- name: "$_REPO/debian-ruby-3.4:latest"
+  entrypoint: "sh"
+  args: [ "-c", "$$PWD/test/cloudbuild.sh Debian $$PWD" ]
+- name: "$_REPO/debian-ruby-4.0:latest"
+  entrypoint: "sh"
+  args: [ "-c", "$$PWD/test/cloudbuild.sh Debian $$PWD" ]
+- name: "$_REPO/cloud-sdk:latest"
+  entrypoint: "/usr/tool/finish.sh"
+  args:
+  - "$REPO_NAME"
+  - "$BRANCH_NAME"
+  - "$_LOGS"
+timeout: "600s"
+options:
+  logging: CLOUD_LOGGING_ONLY
+  workerRelease: regular

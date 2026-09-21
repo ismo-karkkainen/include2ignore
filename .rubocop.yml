@@ -40,7 +40,11 @@ Naming/HeredocDelimiterNaming:
 
 Style/AccessorGrouping:
   Enabled: false
+Style/ClassVars:
+  Enabled: false
 Style/ConditionalAssignment:
+  Enabled: false
+Style/GuardClause:
   Enabled: false
 Style/RedundantPercentQ:
   Enabled: false
@@ -51,6 +55,8 @@ Style/TernaryParentheses:
 Style/IfUnlessModifier:
   Enabled: false
 Style/MixinUsage:
+  Enabled: false
+Style/WordArray:
   Enabled: false
 
 Lint/AmbiguousOperatorPrecedence:

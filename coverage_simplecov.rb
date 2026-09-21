@@ -7,7 +7,7 @@ require 'simplecov'
 require 'simplecov-console'
 SimpleCov.start do
   SimpleCov.formatter = SimpleCov::Formatter::Console
-  SimpleCov.add_filter 'test'
+  SimpleCov.skip 'test'
 end
 SimpleCov::Formatter::Console.sort = 'path'
 SimpleCov::Formatter::Console.output_style = 'block'

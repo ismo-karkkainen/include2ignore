@@ -7,13 +7,12 @@ require 'rake'
 Gem::Specification.new do |s|
   s.name = Include2Ignore::NAME
   s.version = Include2Ignore::VERSION
-  s.summary = 'Tool for turning included file list to ignored file list.'
+  s.summary = 'Reads include file, finds files under directory, and outputs ignore file.'
   s.description = <<EOF
-Tool for turning a list of files to include to a list of files to ignore,
-given the directory for obtaining a list of files in it. Intended for cases
-where it is easier to keep a list of files to include, and the ignore file
-of the tool does not support ignoring everything and then adding exceptions,
-which is the same as passing a list of files and directories to include.
+Takes a list of file names or patterns, finds all files that do not match any
+of them, or only match exclude patterns in the input file, and outputs them.
+If directory contains no files that are included, outputs the directory
+instead of individual files.
 EOF
   s.authors = [ 'Ismo Kärkkäinen' ]
   s.email = 'ismokarkkainen@icloud.com'

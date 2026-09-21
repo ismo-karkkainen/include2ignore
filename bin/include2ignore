@@ -1,0 +1,172 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Copyright © 2026 Ismo Kärkkäinen
+# Licensed under Universal Permissive License. See LICENSE.txt.
+
+require_relative '../lib/include2ignore'
+require 'optparse'
+
+
+def read(filename)
+  rules = Include2Ignore::Include::Classifier.new
+  f = filename.nil? ? $stdin : File.new(filename, 'rt')
+  idx = 0
+  f.each_line(chomp: true) do |line|
+    idx += 1
+    Include2Ignore::Warnings.where("#{idx}: #{line}")
+    rules.add(line)
+  end
+  f.close unless filename.nil?
+  rules.close
+  rules
+end
+
+def main
+  input_name = nil
+  output_name = nil
+  output_format = nil
+  directory = Dir.pwd
+  skip_name = nil
+  dump_format = nil
+  verbose = false
+
+  parser = OptionParser.new do |opts|
+    opts.summary_indent = '  '
+    opts.summary_width = 24
+    opts.banner = 'Usage: include2ignore [options]'
+    opts.separator ''
+    opts.separator 'Options:'
+    opts.on('-i', '--input FILE', 'Read from include FILE, not stdin.') do |f|
+      input_name = f
+    end
+    opts.on('-o', '--output FILE', 'Write to ignore FILE, not stdout.') do |f|
+      output_name = f
+    end
+    opts.on('-f', '--format FORMAT', 'Output format: file name or internal format name.') do |fmt|
+      output_format = fmt
+    end
+    opts.on('-d', '--directory DIR', 'Use base DIR, not current directory.') do |d|
+      directory = d
+    end
+    opts.on('--dir-link ACTION', "Symlink handling: #{Include2Ignore::Search::DIR_SYMLINK_HANDLING.map { |h| h == Include2Ignore::Search.dir_symlink_handling ? "*#{h}*" : h }.join(', ')}") do |action|
+      a = action.downcase.to_sym
+      unless Include2Ignore::Search::DIR_SYMLINK_HANDLING.include?(a)
+        $stderr.puts("Allowed --dir-symlink values: #{Include2Ignore::Search::DIR_SYMLINK_HANDLING.join(', ')}, got: #{action}")
+        return 1
+      end
+      Include2Ignore::Search.dir_symlink_handling = a
+    end
+    opts.on('--file-link ACTION', "Symlink handling: #{Include2Ignore::Search::FILE_SYMLINK_HANDLING.map { |h| h == Include2Ignore::Search.file_symlink_handling ? "*#{h}*" : h }.join(', ')}") do |action|
+      a = action.downcase.to_sym
+      unless Include2Ignore::Search::FILE_SYMLINK_HANDLING.include?(a)
+        $stderr.puts("Allowed --file-symlink values: #{Include2Ignore::Search::FILE_SYMLINK_HANDLING.join(', ')}, got: #{action}")
+        return 1
+      end
+      Include2Ignore::Search.file_symlink_handling = a
+    end
+    opts.on('--skip FILE', 'Read skip rules from FILE.') do |f|
+      skip_name = f
+    end
+    opts.on('--verbose', 'Verbose output, shows pattern interpretations.') do
+      verbose = true
+    end
+    opts.on('--dump FORMAT', 'Dump internal FORMAT to output and exit.') do |fmt|
+      dump_format = fmt
+    end
+    opts.on('-h', '--help', 'Print this help and exit.') do
+      $stdout.puts %(#{opts}
+Reads include file, finds files under directory, and outputs ignore file.
+
+#{Include2Ignore::Include.doc}
+#{Include2Ignore::Search.doc}
+#{Include2Ignore::IgnoreConfiguration.doc}
+Directory with nothing under it included or explicitly excluded is ignored to
+avoid listing all files under it.
+
+Skip rules can be used to prevent searching of directories or to skip files
+like ACTION "skip" does for symlinks.
+)
+      return 0
+    end
+  end
+  parser.order!
+
+  # Dump internal output.
+  unless dump_format.nil?
+    return 0 unless Include2Ignore::IgnoreConfiguration.write(output_name, dump_format).nil?
+    $stderr.puts("Not an internal format name: #{dump_format}")
+    return 1
+  end
+
+  # Output format.
+  format = Include2Ignore::IgnoreConfiguration.read(output_format)
+  if format.nil?
+    $stderr.puts("Not a file nor format name: #{output_format}")
+    return 1
+  end
+  begin
+    format = Include2Ignore::IgnoreConfiguration::ConfigurationAlternatives.new(format)
+  rescue ArgumentError => e
+    $stderr.puts("Configuration is not valid: #{e}")
+    return 1
+  end
+
+  # Directory.
+  unless File.directory?(directory)
+    $stderr.puts("Not a directory: #{directory}")
+    return 1
+  end
+  directory = File.realdirpath(directory)
+
+  Include2Ignore::Warnings.output_explanations(verbose)
+
+  # Input file.
+  begin
+    rules = read(input_name)
+  rescue Exception => e
+    $stderr.puts(%(Failed to read input:#{input_name.nil? ? ' ' : " #{input_name}: "}#{e}))
+    return 2
+  end
+
+  # Skip rules or empty default.
+  if skip_name.nil?
+    skip = Include2Ignore::Include::Classifier.new
+    skip.close
+  else
+    begin
+      skip = read(skip_name)
+    rescue Exception => e
+      $stderr.puts("Failed to read input: #{skip_name}: #{e}")
+      return 2
+    end
+  end
+
+  # Search.
+  results = Include2Ignore::Classified.new
+  begin
+    Include2Ignore::Search.traverse(directory, skip) do |path_parts, is_dir, invalid|
+      kind = is_dir ? Include2Ignore::Include::DIR : Include2Ignore::Include::FILE
+      exclude = invalid ? true : rules.exclude(path_parts, kind)
+      results.add(path_parts, exclude, is_dir)
+    end
+  rescue Errno::EACCES, Errno::ENOENT => e
+    $stderr.puts("Error traversing directory: #{e}")
+    return 4
+  end
+
+  # Shorten and save results.
+  results.pick
+  included, _undecided, excluded = results.counts
+  begin
+    out = Include2Ignore::Ignore.new(output_name, format.select(included, excluded))
+  rescue Exception => e
+    $stderr.puts("Error opening output file: #{e}")
+    return 3
+  end
+  results.output(out)
+  out.close
+  0
+end
+
+exit(main) if File.basename(__FILE__) == File.basename($PROGRAM_NAME)

@@ -7,8 +7,4 @@
 module Include2Ignore
   NAME = 'include2ignore'
   VERSION = '0.1.0'
-
-  def self.info(separator = ': ')
-    "#{NAME}#{separator}#{VERSION}"
-  end
 end
