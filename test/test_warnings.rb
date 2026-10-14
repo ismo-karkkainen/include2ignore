@@ -34,7 +34,6 @@ class TestInclude2IgnoreWarnings < Test::Unit::TestCase
   def test_warn_with_context
     @warnings.where('test_location')
     @warnings.warn('test message')
-
     output = @output_buffer.string
     assert_equal('test_location', output.lines[0].rstrip)
     assert_equal('  test message', output.lines[1].rstrip)
@@ -49,14 +48,19 @@ class TestInclude2IgnoreWarnings < Test::Unit::TestCase
   def test_warn_clears_context
     @warnings.where('test_location')
     @warnings.warn('test message')
-
     assert_nil(@warnings.context)
+  end
+
+  def test_warn_omit_context
+    @warnings.where('test_location')
+    @warnings.warn('test message', true)
+    assert_equal('test message', @output_buffer.string.rstrip)
+    refute_nil(@warnings.context)
   end
 
   def test_warn_class_method
     @warnings.where('test_location')
     Include2Ignore::Warnings.warn('class method message')
-
     output = @output_buffer.string
     assert_equal('test_location', output.lines[0].rstrip)
     assert_equal('  class method message', output.lines[1].rstrip)
@@ -82,7 +86,6 @@ class TestInclude2IgnoreWarnings < Test::Unit::TestCase
     @warnings.where('test_location')
     @warnings.instance_variable_set(:@verbose, true)
     @warnings.explain('explanation message')
-
     output = @output_buffer.string
     assert_equal('test_location', output.lines[0].rstrip)
     assert_equal('  explanation message', output.lines[1].rstrip)
@@ -92,7 +95,6 @@ class TestInclude2IgnoreWarnings < Test::Unit::TestCase
     @warnings.where('test_location')
     @warnings.instance_variable_set(:@verbose, true)
     Include2Ignore::Warnings.explain('class explanation')
-
     output = @output_buffer.string
     assert_equal('test_location', output.lines[0].rstrip)
     assert_equal('  class explanation', output.lines[1].rstrip)
@@ -101,7 +103,6 @@ class TestInclude2IgnoreWarnings < Test::Unit::TestCase
   def test_explain_false_verbose_class_method
     @warnings.where('test_location')
     Include2Ignore::Warnings.explain('class explanation')
-
     assert_equal('', @output_buffer.string)
   end
 
@@ -111,7 +112,6 @@ class TestInclude2IgnoreWarnings < Test::Unit::TestCase
     Include2Ignore::Warnings.warn('Unused import')
     Include2Ignore::Warnings.explain('This import is never used')
     Include2Ignore::Warnings.explain('Consider removing it')
-
     output = @output_buffer.string
     assert_equal('source:file.rb', output.lines[0].rstrip)
     assert_equal('  Unused import', output.lines[1].rstrip)

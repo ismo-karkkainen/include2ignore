@@ -64,10 +64,10 @@ EOF
               @handle = Search.file_symlink_handling
             end
           rescue Errno::ENOENT
-            Include2Ignore::Warnings.warn("Symlink broken: #{full_name}")
+            Include2Ignore::Warnings.warn("Symlink broken: #{full_name}", true)
             @handle = :reject
           rescue Errno::ELOOP
-            Include2Ignore::Warnings.warn("Symlink loop: #{full_name}")
+            Include2Ignore::Warnings.warn("Symlink loop: #{full_name}", true)
             @handle = :reject
           end
         elsif @stat.directory?

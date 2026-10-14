@@ -32,15 +32,19 @@ module Include2Ignore
       Warnings.instance.where(location)
     end
 
-    def warn(message)
+    def warn(message, omit_context = false)
       @output = $stderr if @output.nil?
-      @output.puts(@context) unless @context.nil?
-      @context = nil
-      @output.puts("  #{message}")
+      if omit_context
+        @output.puts(message)
+      else
+        @output.puts(@context) unless @context.nil?
+        @context = nil
+        @output.puts("  #{message}")
+      end
     end
 
-    def self.warn(message)
-      Warnings.instance.warn(message)
+    def self.warn(message, omit_context = false)
+      Warnings.instance.warn(message, omit_context)
     end
 
     def self.output_explanations(verbose)

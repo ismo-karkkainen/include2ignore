@@ -58,6 +58,8 @@ Style/MixinUsage:
   Enabled: false
 Style/WordArray:
   Enabled: false
+Style/OptionalBooleanParameter:
+  Enabled: false
 
 Lint/AmbiguousOperatorPrecedence:
   Enabled: false
