@@ -309,20 +309,60 @@ class TestInclude2IgnoreAnchoredRule < Test::Unit::TestCase
   end
 
   def test_anydirs_in_middle_requires_one_directory
-    anchored = @anchored.new([ element(/^a$/, @dir), @processed.new(:anydirs, @dir), element(/^c$/, @file) ], true)
+    anchored = @anchored.new([ element(/^a$/, @dir), element(:anydirs, @dir), element(/^c$/, @file) ], true)
     refute(anchored.match?(%w[a c], @file))
     assert(anchored.match?(%w[a x c], @file))
   end
 
   def test_anydirs_in_middle_absorbs_multiple_directories
-    anchored = @anchored.new([ element(/^a$/, @dir), @processed.new(:anydirs, @dir), element(/^c$/, @file) ], true)
+    anchored = @anchored.new([ element(/^a$/, @dir), element(:anydirs, @dir), element(/^c$/, @file) ], true)
     assert(anchored.match?(%w[a x y c], @file))
   end
 
   def test_anydirs_at_start_requires_one_directory
-    anchored = @anchored.new([ @processed.new(:anydirs, @dir), element(/^test.txt$/, @file) ], true)
+    anchored = @anchored.new([ element(:anydirs, @dir), element(/^test.txt$/, @file) ], true)
     refute(anchored.match?(['test.txt'], @file))
     assert(anchored.match?(['a', 'b', 'test.txt'], @file))
+  end
+
+  def test_asterisk_file
+    anchored = @anchored.new([ element(@rule::ANY_ONE, @file) ], false)
+    refute(anchored.match?(['a', 'b', 'c'], @dir))
+    refute(anchored.match?(['b', 'c'], @dir))
+    refute(anchored.match?(['c'], @dir))
+    refute(anchored.match?(['a', 'b', 'test.txt'], @file))
+    refute(anchored.match?(['a', 'test.txt'], @file))
+    assert(anchored.match?(['test.txt'], @file))
+  end
+
+  def test_asterisk_dir
+    anchored = @anchored.new([ element(@rule::ANY_ONE, @dir) ], false)
+    refute(anchored.match?(['a', 'b', 'c'], @dir))
+    refute(anchored.match?(['b', 'c'], @dir))
+    assert(anchored.match?(['c'], @dir))
+    refute(anchored.match?(['a', 'b', 'test.txt'], @file))
+    refute(anchored.match?(['a', 'test.txt'], @file))
+    refute(anchored.match?(['test.txt'], @file))
+  end
+
+  def test_asterisk_anydir_file
+    anchored = @anchored.new([ element(:anydirs, @dir), element(@rule::ANY_ONE, @file) ], false)
+    refute(anchored.match?(['a', 'b', 'c'], @dir))
+    refute(anchored.match?(['b', 'c'], @dir))
+    refute(anchored.match?(['c'], @dir))
+    assert(anchored.match?(['a', 'b', 'test.txt'], @file))
+    assert(anchored.match?(['a', 'test.txt'], @file))
+    refute(anchored.match?(['test.txt'], @file))
+  end
+
+  def test_asterisk_dir_anydir
+    anchored = @anchored.new([ element(@rule::ANY_ONE, @dir), element(:anydirs, @dir) ], false)
+    assert(anchored.match?(['a', 'b', 'c'], @dir))
+    assert(anchored.match?(['b', 'c'], @dir))
+    refute(anchored.match?(['c'], @dir))
+    refute(anchored.match?(['a', 'b', 'test.txt'], @file))
+    refute(anchored.match?(['a', 'test.txt'], @file))
+    refute(anchored.match?(['test.txt'], @file))
   end
 
   def test_remove_empties

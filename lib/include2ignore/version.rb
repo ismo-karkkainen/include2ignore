@@ -6,5 +6,5 @@
 # Name and version.
 module Include2Ignore
   NAME = 'include2ignore'
-  VERSION = '0.1.0'
+  VERSION = '0.1.1'
 end

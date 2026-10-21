@@ -289,6 +289,7 @@ EOF
           # Last key is known to match last item, so if that were tested, it would pass.
           return position_index == @elements.size - 1
         end
+        return false if position_index == @elements.size
         if @elements[position_index].re == :anydirs
           # :anydir absorbs current key and moves to next position.
           return true if search(index_arrays, array_index + 1, position_index + 1)
